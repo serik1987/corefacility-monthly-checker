@@ -1,9 +1,12 @@
 import subprocess
 import sys
 import os
+import logging
+import logging.config
 from django.utils.module_loading import import_string
 
 
+ALREADY_UNMOUNTED_ERROR_CODE = 32
 STANDARD_CHECKERS = {
 	"cpu_test": "ru.ihna.kozhukhov.corefacility_checker.cpu_test.CpuTest"
 }
@@ -16,9 +19,16 @@ def main(argv):
 	"""
 	try:
 		_check_requirements()
+		_configure_logging()
 		_set_up()
 		checker = _reveal_checker("cpu_test")
-		checker.run()
+		logger = logging.getLogger("django.corefacility.checker")
+		try:
+			logger.info("The test %s has been started" % checker.name)
+			checker.run()
+			logger.info("The test %s has been successfully completed" % checker.name)
+		except Exception as error:
+			logger.error("The test %s has failed due to the following error: %s" % (checker.name, error))
 		_tear_down()
 	except Exception as error:
 		print("FATAL ERROR: %s" % error)
@@ -38,13 +48,57 @@ def _check_requirements():
 		sys.exit(-2)
 
 
+def _configure_logging():
+	"""
+	Configures the logging
+	"""
+	logging.config.dictConfig({
+		"version": 1,
+		"disable_existing_loggers": False,
+		"formatters": {
+            "console_formatter": {
+                "format": "[%(asctime)s] %(name)s:\t(%(levelname)s) %(message)s",
+            },
+            "syslog_formatter": {
+                "format": "%(name)s[%(levelname)s]: %(message)s"
+            },
+        },
+        "handlers": {
+            "stream_handler": {
+                "class": "logging.StreamHandler",
+                "level": "DEBUG",
+                "formatter": "console_formatter",
+            },
+            "syslog_handler": {
+                "class": "logging.handlers.SysLogHandler",
+                "level": "INFO",
+                "formatter": "syslog_formatter",
+                "facility": "local1",
+                "address": "/dev/log"
+            },
+        },
+        "loggers": {
+            "django.corefacility.checker": {
+                "level": "DEBUG",
+                "propagate": False,
+                "filters": [],
+                "handlers": ["stream_handler", "syslog_handler"],
+            },
+        }
+	})
+
+
 def _set_up():
 	"""
 	Initializing the test conditions
 	"""
 	subprocess.run(('systemctl', 'stop', 'corefacility'), check=True)
 	subprocess.run(('systemctl', 'stop', 'gunicorn'), check=True)
-	subprocess.run(('umount', '/data'), check=True)
+	try:
+		subprocess.run(('umount', '-q', '/data'), check=True)
+	except subprocess.CalledProcessError as error:
+		if error.returncode != ALREADY_UNMOUNTED_ERROR_CODE:
+			raise
 
 
 def _tear_down():

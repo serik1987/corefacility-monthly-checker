@@ -1,3 +1,6 @@
+import logging
+
+
 class CheckerTest:
 	"""
 	We implemented the object-oriented programming for the following reasons:
@@ -8,6 +11,9 @@ class CheckerTest:
 
 	This is a base class for all test routines.
 	"""
+
+	logger = logging.getLogger("django.corefacility.checker")
+	name = "Sample tester"
 
 	@classmethod
 	def run(cls, **kwargs):

@@ -59,6 +59,7 @@ class CpuTest(CheckerTest):
 	CURRENT_VALUE_TEMPLATE = re.compile(r'^temp\d+_input$')
 	TEMPERATURE_LIMIT = 71
 
+	name = "CPU temperature"
 	temperatures = None
 	threads = None
 
@@ -78,10 +79,10 @@ class CpuTest(CheckerTest):
 		while datetime.now() < end_time:
 			time.sleep(cls.ITERATION_TIME)
 			cls._get_kernel_temperatures()
-			print("Calculation info: Start time %s; Current time %s; End time %s" %
+			cls.logger.debug("Calculation info: Start time %s; Current time %s; End time %s" %
 				(start_time.isoformat(), datetime.now().isoformat(), end_time.isoformat()))
 		cls._finish_computation_threads()
-		cls._report_cpu_temperatures()
+		return cls._report_cpu_temperatures()
 
 	@classmethod
 	def _start_computation_threads(cls, signal):
@@ -132,10 +133,11 @@ class CpuTest(CheckerTest):
 		"""
 		temperatures_str = ["Core %d: %1.1fC" % (core_number, temperatures)
 			for core_number, temperatures in cls.temperatures.items()]
-		print("CPU temperatures:", "; ".join(temperatures_str))
+		temperatures_str = "CPU temperatures: " + "; ".join(temperatures_str) + "\n"
 		max_temperature = max(cls.temperatures.values())
 		if max_temperature > cls.TEMPERATURE_LIMIT:
-			raise TestFailedError("CPU test failed: the maximum temperature is %1.1f C that exceeds %1.1f C" %
-				(max_temperature, cls.TEMPERATURE_LIMIT))
+			raise TestFailedError("%sCPU test failed: the maximum temperature is %1.1f C that exceeds %1.1f C" %
+				(temperatures_str, max_temperature, cls.TEMPERATURE_LIMIT))
 		else:
-			print("CPU test passed: the maximum temperature is %1.1f C that is good" % max_temperature)
+			cls.logger.info("%sCPU test passed: the maximum temperature is %1.1f C that is good" %
+				(temperatures_str, max_temperature))
