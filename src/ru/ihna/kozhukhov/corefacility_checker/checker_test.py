@@ -14,6 +14,8 @@ class CheckerTest:
 
 	logger = logging.getLogger("django.corefacility.checker")
 	name = "Sample tester"
+	posix_log = None
+	mail_options = None
 
 	@classmethod
 	def run(cls, **kwargs):

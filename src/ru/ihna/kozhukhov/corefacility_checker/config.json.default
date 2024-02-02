@@ -1,0 +1,117 @@
+{
+	"posix_log": "/var/log/syslog",
+	"logging": {
+		"version": 1,
+		"disable_existing_loggers": false,
+		"formatters": {
+            "console_formatter": {
+            	"()": "ru.ihna.kozhukhov.corefacility_checker.console_formatter.ConsoleFormatter",
+                "format": "[%(asctime)s] %(name)s:\t(%(levelname)s) %(message)s"
+            },
+            "syslog_formatter": {
+                "format": "%(name)s[%(levelname)s]: %(message)s"
+            },
+            "mail_formatter": {
+            	"format": "[%(asctime)s] (%(levelname)s) %(message)s"
+            }
+        },
+        "handlers": {
+            "stream_handler": {
+                "class": "logging.StreamHandler",
+                "level": "DEBUG",
+                "formatter": "console_formatter"
+            },
+            "syslog_handler": {
+                "class": "logging.handlers.SysLogHandler",
+                "level": "INFO",
+                "formatter": "syslog_formatter",
+                "facility": "local1",
+                "address": "/dev/log"
+            },
+            "mail_handler": {
+            	"class": "ru.ihna.kozhukhov.corefacility_checker.mail_handler.MailHandler",
+            	"level": "INFO",
+            	"formatter": "mail_formatter"
+            }
+        },
+        "loggers": {
+            "django.corefacility.checker": {
+                "level": "DEBUG",
+                "propagate": false,
+                "filters": [],
+                "handlers": ["stream_handler", "syslog_handler", "mail_handler"]
+            }
+        }
+	},
+	"mailing": {
+		"server": "smtp.mail.ru",
+		"port": 465,
+		"login": "no-reply@ihna.ru",
+		"password": "PAJ25NuFfykNsTrti962",
+		"sender": "no-reply@ihna.ru",
+		"recipient": "serik1987@gmail.com",
+		"use_ssl": true,
+		"use_tls": false
+	},
+	"set_up": [
+		"systemctl stop corefacility",
+		"systemctl stop gunicorn"
+	],
+	"tests": {
+		"network": {
+			"class": "posix_command",
+			"command": "ping -c 50 192.168.0.1"
+		},
+		"cpu": {
+			"class": "cpu_test",
+			"duration": 10
+		},
+		"memory": {
+			"class": "memory_test",
+			"memory_size": "15G"
+		},
+		"fsck": {
+			"class": "posix_command",
+			"command": "umount /data && fsck -a -T /dev/md0 && mount /data"
+		},
+		"dd_sda": {
+			"class": "disk_physical_reading",
+			"device": "/dev/sda",
+			"count": 40000
+		},
+		"dd_sdb": {
+			"class": "disk_physical_reading",
+			"device": "/dev/sdb",
+			"count": 40000
+		},
+		"dd_sdc": {
+			"class": "disk_physical_reading",
+			"device": "/dev/sdc"
+		},
+		"dd_sdd": {
+			"class": "disk_physical_reading",
+			"device": "/dev/sdd",
+			"count": 40000
+		},
+		"smart": {
+			"class": "smart_test",
+			"devices": ["/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd"],
+			"test_type": "long"
+		},
+		"os_update": {
+			"class": "posix_command",
+			"command": "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get upgrade"
+		},
+		"sql_dump": {
+			"class": "sql_dump",
+			"command": "sudo -u postgres pg_dump corefacility > $output",
+			"temporary_dump_folder": "/data/sql_backup_tmp",
+			"permanent_dump_folder": "/data/sql_backup",
+			"max_backup_size": 10485760
+		}
+	},
+	"tear_down": [
+		"systemctl start gunicorn",
+		"systemctl start corefacility"
+	]
+}

@@ -1,0 +1,2 @@
+[console_scripts]
+corefacility-checker = ru.ihna.kozhukhov.corefacility_checker:main
