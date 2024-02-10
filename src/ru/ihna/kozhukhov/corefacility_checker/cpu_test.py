@@ -54,7 +54,7 @@ class CpuTest(CheckerTest):
 	"""
 
 	ARRAY_LENGTH = 1_000_000
-	ITERATION_TIME = 1;
+	ITERATION_TIME = 1
 	CORE_TEMPERATURE_TEMPLATE = re.compile(r'^[Cc]ore\s*(\d+)$')
 	CURRENT_VALUE_TEMPLATE = re.compile(r'^temp\d+_input$')
 	TEMPERATURE_LIMIT = 71

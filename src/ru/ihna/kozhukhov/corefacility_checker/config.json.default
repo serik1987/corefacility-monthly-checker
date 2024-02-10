@@ -46,10 +46,10 @@
 	"mailing": {
 		"server": "smtp.mail.ru",
 		"port": 465,
-		"login": "no-reply@ihna.ru",
-		"password": "PAJ25NuFfykNsTrti962",
-		"sender": "no-reply@ihna.ru",
-		"recipient": "serik1987@gmail.com",
+		"login": "no-reply@mail.net",
+		"password": "***",
+		"sender": "no-reply@mail.net",
+		"recipient": "admin@mail.net",
 		"use_ssl": true,
 		"use_tls": false
 	},
