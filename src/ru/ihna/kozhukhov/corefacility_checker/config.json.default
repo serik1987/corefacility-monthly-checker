@@ -108,6 +108,10 @@
 			"temporary_dump_folder": "/data/sql_backup_tmp",
 			"permanent_dump_folder": "/data/sql_backup",
 			"max_backup_size": 10485760
+		},
+		"account_synchronize": {
+		    "class": "posix_command",
+		    "command": "corefacility posix_synchronize"
 		}
 	},
 	"tear_down": [
