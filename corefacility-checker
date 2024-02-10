@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+from pathlib import Path
+import sys
+source_path = str(Path('src').absolute())
+sys.path.append(source_path)
+from ru.ihna.kozhukhov.corefacility_checker import main
+main()
